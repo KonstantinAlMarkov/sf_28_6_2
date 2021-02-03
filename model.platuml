@@ -1,0 +1,133 @@
+@startuml
+class ProductFactory
+ProductFactory : createProduct($name, $price)
+interface iProduct
+iProduct : changeQuantity($value)
+class product
+product : name string
+product : price float
+product : quantity int
+product : changeQuantity($quantity)
+
+class basket
+basket : totalPrice
+basket : checkout()
+basket : addProduct(product, quantity)
+basket : removeProduct(product, quantity)
+
+class OrderFactory
+OrderFactory : createOrder($basket)
+interface iOrder
+iOrder : changeQuantity($value)
+interface iObserverOrder
+iObserverOrder : onChanged ($delivery, $status)
+class order
+order : totalPrice
+order : status
+order : addProduct(product, quantity)
+order : removeProduct(product, quantity)
+order : onChanged ($delivery, $status)
+
+interface iUser
+iUser : getName()
+iUser : getSurname()
+iUser : getPhone()
+iUser : getEmail()
+iUser : getAddress()
+abstract user
+user : name
+user : surname
+user : phone
+user : email
+user : address
+class CustomerFactory
+CustomerFactory : createCustomer($type)
+interface iCustomer
+iCustomer : getType()
+iCustomer : getStatus()
+class customer
+customer : status
+customer : type
+interface iCourier
+iCourier : getWorktime()
+iCourier : getTransportType()
+class CourierFactory
+CourierFactory : createCourier($worktime, $transportType)
+class courier
+courier : worktime
+courier : transportType
+
+class DeliveryFactory
+DeliveryFactory : createDelivery
+interface iDelivery
+iDelivery : findCourier()
+interface iObservableDelivery
+iObservableDelivery : addObserver($order)
+class delivery
+delivery : time
+delivery : address
+delivery : addObserver($order)
+class CommandChainCourierFinder
+CommandChainCourierFinder : addCommand($command)
+CommandChainCourierFinder : runCommand($name, $args)
+interface ICommandCourierFinder
+ICommandCourierFinder : onCommand($name, $args)
+class CarCourierFinder
+CarCourierFinder : onCommand($name, $args)
+class BikeCourierFinder
+CarCourierFinder : onCommand($name, $args)
+
+class discount
+discount : type
+discount : condition
+discount : percent
+discount : findDiscont 
+interface IStrategyDiscount
+IStrategyDiscount : findDiscoint($order)
+class PercentDiscount
+PercentDiscount : findDiscoint($order)
+class DeliveryDiscount
+DeliveryDiscount : findDiscoint($order)
+class ProductDiscount
+ProductDiscount : findDiscoint($order)
+
+class DBSingleton
+DBSingleton : get()
+DBSingleton : handle()
+
+iProduct --> product
+ProductFactory ..> iProduct
+product "many" -- "many" basket : "добавляются" >
+product "1" -- "1" customer : "управляется" >
+basket -- order : "формирует" >
+user <|-- customer
+user <|-- courier
+iUser --> user
+CustomerFactory ..> iCustomer
+CourierFactory ..> iCourier
+iOrder --> order
+iCustomer --> customer
+iCourier --> courier
+
+OrderFactory ..> iOrder
+order --> iObserverOrder
+product "many" -- "many" order : "покупаются" >
+order "many" o-- "1" customer : "составляет" <
+order "many" o-- "1" discount : "определяет цену" <
+discount --> IStrategyDiscount
+PercentDiscount --> IStrategyDiscount
+DeliveryDiscount ..> IStrategyDiscount
+ProductDiscount ..> IStrategyDiscount
+
+delivery "1"  ..> "many" order    : "доставляется" >
+iDelivery --> delivery
+delivery --> iObservableDelivery
+DeliveryFactory ..> iDelivery
+delivery "many" -- "1" courier  : "доставляется" >
+
+delivery -- CommandChainCourierFinder
+CommandChainCourierFinder ..> ICommandCourierFinder
+CarCourierFinder --> ICommandCourierFinder
+BikeCourierFinder --> ICommandCourierFinder
+
+@enduml
